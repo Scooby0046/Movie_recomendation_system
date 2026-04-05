@@ -1,0 +1,280 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieFlix | Explore</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #ff416c;
+            --secondary: #ff4b2b;
+            --bg: #0a0a0a;
+            --card-bg: #1a1a1a;
+            --glass: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            color: white;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .nav-container {
+            max-width: 1300px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #ccc;
+            margin-left: 25px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            color: #ff4b2b;
+            font-weight: 600;
+        }
+
+        /* HERO */
+        .hero {
+            height: 60vh;
+            background: linear-gradient(rgba(0,0,0,0.7), var(--bg)),
+                        url('https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?q=80&w=2070&auto=format&fit=crop');
+            background-size: cover;
+            background-position: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding-top: 60px;
+        }
+
+        .hero h1 { font-size: 3rem; }
+        .hero p { color: #bbb; }
+
+        /* SEARCH */
+        .search-box {
+            margin-top: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 1px solid var(--glass);
+            background: var(--glass);
+            color: white;
+            outline: none;
+        }
+
+        /* GRID */
+        .main-content {
+            max-width: 1300px;
+            margin: -50px auto 50px;
+            padding: 0 20px;
+        }
+
+        .movies-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        /* CARD */
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            overflow: hidden;
+            transition: 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            border: 1px solid var(--primary);
+        }
+
+        .card img {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+        }
+
+        .card-info {
+            padding: 15px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .icon-btn {
+            background: var(--glass);
+            border: none;
+            color: white;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .btn-details {
+            background: var(--primary);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #suggestions {
+            position: absolute;
+            top: 60px;
+            width: 100%;
+            background: #1a1a1a;
+            border-radius: 10px;
+        }
+
+        #suggestions p {
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        #suggestions p:hover {
+            background: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="nav-container">
+        <a href="{% url 'home' %}" class="logo">MOVIEFLIX</a>
+
+        <div class="nav-links">
+            <a href="{% url 'recommendations' %}">Recommendations</a>
+            <a href="{% url 'watchlist_page' %}">My Watchlist</a>
+            <a href="{% url 'logout' %}" class="logout-btn"
+               onclick="return confirm('Logout?')">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- HERO -->
+<header class="hero">
+    <h1>Unlimited Movies & More</h1>
+    <p>Search your favorites or explore</p>
+
+    <div class="search-box">
+        <form method="GET" action="{% url 'home' %}">
+            <input type="text" name="q" id="searchInput"
+                   placeholder="Search movies..." autocomplete="off">
+        </form>
+        <div id="suggestions"></div>
+    </div>
+</header>
+
+<!-- MOVIES -->
+<main class="main-content">
+    <div class="movies-grid">
+        {% for movie in movies %}
+        <div class="card">
+            <img src="{{ movie.poster }}" alt="{{ movie.title }}">
+            <div class="card-info">
+                <h4>{{ movie.title }}</h4>
+
+                <div class="btn-group">
+                    <form action="{% url 'like_movie' movie.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn">
+                            ❤️
+                        </button>
+                    </form>
+
+                    <form action="{% url 'toggle_watchlist' movie.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="icon-btn">📌</button>
+                    </form>
+
+                    <button class="btn-details"
+                            onclick="window.location.href='{% url 'movie_detail' movie.id %}'">
+                        Details
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</main>
+
+<!-- SEARCH SCRIPT -->
+<script>
+const input = document.getElementById("searchInput");
+const suggestions = document.getElementById("suggestions");
+
+input.addEventListener("keyup", async () => {
+    let query = input.value;
+    if(query.length < 2){
+        suggestions.innerHTML = "";
+        return;
+    }
+
+    let res = await fetch(`/suggest/?q=${query}`);
+    let data = await res.json();
+
+    suggestions.innerHTML = data.map(m =>
+        `<p onclick="selectMovie('${m}')">${m}</p>`
+    ).join("");
+});
+
+function selectMovie(name){
+    input.value = name;
+    suggestions.innerHTML = "";
+    input.closest('form').submit();
+}
+</script>
+
+</body>
+</html>
